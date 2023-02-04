@@ -48,8 +48,7 @@ def Glauber(lx, ly, spin):
 
 
     # spin is always flipped if energy change is negative
-    if (deltaE < 0): spin[itrial,jtrial]=-spin[itrial,jtrial]
-    elif (np.exp(-(deltaE)/kT) > Prob_threshold ): spin[itrial,jtrial]=-spin[itrial,jtrial]
+    if (deltaE < 0 or np.exp(-(deltaE)/kT) > Prob_threshold): spin[itrial,jtrial]=-spin[itrial,jtrial]
     # return 0 energy if spin not flipped
     else: return 0, spin 
 
@@ -92,11 +91,7 @@ def Kawasaki(lx, ly, spin):
     Prob_threshold = random.random()
 
     # spin is always flipped if energy change is negative
-    if (deltaE_Total < 0): 
-        spin[itrial1,jtrial1]=spin_initial2
-        spin[itrial2,jtrial2]=spin_initial1
-
-    elif ( np.exp(-(deltaE_Total)/kT) > Prob_threshold  ):
+    if (deltaE_Total < 0 or np.exp(-(deltaE_Total)/kT) > Prob_threshold): 
         spin[itrial1,jtrial1]=spin_initial2
         spin[itrial2,jtrial2]=spin_initial1
     else:
@@ -105,7 +100,7 @@ def Kawasaki(lx, ly, spin):
     return deltaE_Total, spin
 
 
-def GetEnergy(lx, ly, spin):
+def GetEnergy(N, spin):
 
     energy = 0
 
@@ -122,42 +117,42 @@ def GetEnergy(lx, ly, spin):
 
     return energy
 
-
-def getMag(spin, kT):
-
-    N = np.size(spin)
-    magnetism = np.sum(spin)
+# calculates spin config susceptability
+def getSuscpt(N, magnetism, kT):
 
     mean_mag = (1/N) * magnetism
     mean_mag_sq = (1/N) * magnetism**2
     suscept = (1/N*kT) * ( mean_mag_sq - mean_mag**2 )
 
-    return suscept, magnetism
+    return suscept
 
+# calculates heat capacity data
+def getHeatCap(N, energy, kT):
 
+    mean_energy = (1/N) * energy
+    mean_energy_sq = (1/N) * energy**2
+    h_capac = (1/N*kT**2) * ( mean_energy_sq - mean_energy**2 )
+
+    return h_capac
 
 
 def plot(spin, obs, n, data):
-# occasionally plot or update measurements, eg every 10 sweeps
 
-    if(n%10==0): 
-        if (True):           
+    # records data once 100 sweeps has been exceeded
+    if (True):           
+        suscept, h_capac, energy, magnetism = obs 
+        print(obs)
+        data.write('{0:.0f} {1:5.5e} {2:5.5e} {3:5.5e} {4:5.5e}\n'.format(n, suscept, h_capac, energy, magnetism))
 
-            suscept, h_capac, energy, magnetism = obs 
-            data.write('{0:.0f} {1:5.5e} {2:5.5e} {3:5.5e} {4:5.5e}\n'.format(n, suscept, h_capac, energy, magnetism))
-
-        plt.cla()
-        im=plt.imshow(spin, animated=True)
-        plt.draw()
-        plt.pause(0.0001)
-
-
+    plt.cla()
+    im=plt.imshow(spin, animated=True)
+    plt.draw()
+    plt.pause(0.0001)
 
 # END OF FUNCTIONS
 
 J=1.0
 nstep=10000
-# nstep = 20
 
 #input
 
@@ -170,27 +165,26 @@ ly=lx
 kT=float(sys.argv[2])
 model=str(sys.argv[3]) 
 
+N = lx
+
 # exits code if incorrect algorithm inputs are set
 if (model != 'Kawasaki' and  model != 'Glauber'):
     print('Error: choose from model arguments\n1 -- Glauber\n2 -- Kawasaki' )
     exit()
 
 # set 2D matrix for spins
-spin=np.zeros((lx,ly),dtype=float)
-
 # setting up/down spins randomly
-for i in range(lx):
-    for j in range(ly):
-        r=random.random()
-        if(r<0.5): spin[i,j]=-1
-        if(r>=0.5): spin[i,j]=1
+spin = np.random.randint(2, size=(N, N))
+spin[spin ==0] = -1
+
+# get initial energy of spin configuration
+energy = GetEnergy(N, spin)
 
 # setting up animantion figure
 fig = plt.figure()
 im=plt.imshow(spin, animated=True)
 
-energy = GetEnergy(lx, ly, spin)
-
+# opening file to print measurement data
 outFilePath = os.getcwd() + f'\\Data\\{model}\\{lx}N_Temp{kT}_{model}Model.dat'
 data=open( outFilePath,'w' )
 
@@ -199,19 +193,23 @@ for n in range(nstep):
     for i in range(lx):
         for j in range(ly):
 
-            # uses different algirithms to calculate deltaE depentednt on input
+            # uses different algirithms to calculate deltaE dependent on input
             if (model=='Glauber'): deltaE, spin = Glauber(lx, ly, spin)
             if (model=='Kawasaki'): deltaE, spin = Kawasaki(lx, ly, spin)
 
+            # adding energy to inital energy config to determine changed values
             energy += deltaE
+            magnetism = np.sum(spin)
 
-            N = lx*lx
-            mean_energy = (1/N) * energy
-            mean_energy_sq = (1/N) * energy**2
-            h_capac = (1/N*kT**2) * ( mean_energy_sq - mean_energy**2 )
-            suscept, magnetism = getMag(spin, kT)
+            # calculating heat capacity
+            h_capac = getHeatCap(N, energy, kT)
 
-    obs = (suscept, h_capac, energy, magnetism)
-    plot(spin, obs, n, data)
+            # calculates susceptibility
+            suscept= getSuscpt(N, magnetism, kT)
+
+    # plot animated update of spin configuration and record measurements every 10 sweeps
+    if(n%10==0): 
+        obs = (suscept, h_capac, energy, magnetism)
+        plot(spin, obs, n, data)
     
 data.close()
