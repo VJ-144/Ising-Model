@@ -83,12 +83,10 @@ def Kawasaki(lx, ly, spin):
     deltaE_Total = deltaE1 + deltaE2
 
     # correction for nearest neubhours
-    # if ( (itrial1%itrial2) == 1 and (jtrial1%jtrial2) == 1  )
-
-    if ( [itrial1,jtrial1] == [np.mod(itrial2-1, lx), jtrial2] ): deltaE_Total -= 4
-    if ( [itrial1,jtrial1] == [np.mod(itrial2+1, lx), jtrial2] ): deltaE_Total -= 4
-    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2+1, lx)] ): deltaE_Total -= 4
-    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2-1, lx)] ): deltaE_Total -= 4
+    if ( [itrial1,jtrial1] == [np.mod(itrial2-1, lx), jtrial2] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [np.mod(itrial2+1, lx), jtrial2] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2+1, lx)] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2-1, lx)] ): deltaE_Total += 4
 
     # flip spin if the probability criteria is met
     Prob_threshold = random.random()
@@ -121,38 +119,33 @@ def GetEnergy(lx, ly, spin):
             spin_bottom=spin[i,np.mod(j-1, lx)]
 
             energy += - initial_spin * (spin_left + spin_right + spin_top + spin_bottom) 
+
     return energy
 
 
 def getMag(spin, kT):
 
     N = np.size(spin)
-
     magnetism = np.sum(spin)
 
     mean_mag = (1/N) * magnetism
-
     mean_mag_sq = (1/N) * magnetism**2
-
     suscept = (1/N*kT) * ( mean_mag_sq - mean_mag**2 )
-    # print(suscept)
 
-    return suscept, np.abs(magnetism)
-
+    return suscept, magnetism
 
 
 
-def plot(lx, l, spin):
+
+def plot(spin, obs, n, data):
 # occasionally plot or update measurements, eg every 10 sweeps
+
     if(n%10==0): 
-    #       update measurements
-    #       dump output
-        f=open('spins.dat','w')
-        for i in range(lx):
-            for j in range(ly):
-                f.write('%d %d %lf\n'%(i,j,spin[i,j]))
-        f.close()
-    #       show animation
+        if (True):           
+
+            suscept, h_capac, energy, magnetism = obs 
+            data.write('{0:.0f} {1:5.5e} {2:5.5e} {3:5.5e} {4:5.5e}\n'.format(n, suscept, h_capac, energy, magnetism))
+
         plt.cla()
         im=plt.imshow(spin, animated=True)
         plt.draw()
@@ -196,13 +189,10 @@ for i in range(lx):
 fig = plt.figure()
 im=plt.imshow(spin, animated=True)
 
-# outFilePath = f'C:\\Users\\Vijay\\OneDrive\\Documents\\Univeristy Work\\Year 5\\MVP\\checkpoint1\\Data\\{model}\\{lx}N_Temp{kT}_{model}Model.dat'
-outFilePath = os.getcwd() + f'\\Data\\{model}\\{lx}N_Temp{kT}_{model}Model.dat'
-f=open( outFilePath,'w' )
-
-
 energy = GetEnergy(lx, ly, spin)
-# print(energy)
+
+outFilePath = os.getcwd() + f'\\Data\\{model}\\{lx}N_Temp{kT}_{model}Model.dat'
+data=open( outFilePath,'w' )
 
 #update loop here - for Glauber dynamic
 for n in range(nstep):
@@ -212,23 +202,16 @@ for n in range(nstep):
             # uses different algirithms to calculate deltaE depentednt on input
             if (model=='Glauber'): deltaE, spin = Glauber(lx, ly, spin)
             if (model=='Kawasaki'): deltaE, spin = Kawasaki(lx, ly, spin)
-            # print(deltaE)
 
             energy += deltaE
 
             N = lx*lx
-
             mean_energy = (1/N) * energy
             mean_energy_sq = (1/N) * energy**2
-            
             h_capac = (1/N*kT**2) * ( mean_energy_sq - mean_energy**2 )
-
             suscept, magnetism = getMag(spin, kT)
-            # print(suscept)
-            # f.write('%d %d\n'%(suscept, h_capac))
-            f.write('{0:5.5e} {1:5.5e} {2:5.5e} {3:5.5e}\n'.format(suscept, h_capac, energy, magnetism))
 
-
-
-
-    plot(lx, ly, spin)
+    obs = (suscept, h_capac, energy, magnetism)
+    plot(spin, obs, n, data)
+    
+data.close()
