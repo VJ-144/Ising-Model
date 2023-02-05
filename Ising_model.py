@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use('TKAgg')
-
 import itertools
 
 import os
