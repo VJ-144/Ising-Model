@@ -13,14 +13,14 @@ def main():
 
     kT_range = np.arange(1,3.1, 0.1)
 
-    for i in tqdm(range(len(kT_range))):
+    for i in range(len(kT_range)):
 
         T = np.round(kT_range[i], 2)
 
         new_spinConfig = im.update_SpinConfig(model, T, spin, N)
         spin = new_spinConfig
 
-        # print(f'Succesful Simulation @ Parameters: N={N} T={np.round(kT_range[i], 2)} Model={model}')
+        print(f'Succesful Simulation @ Parameters: N={N} T={np.round(kT_range[i], 2)} Model={model}')
 
 
 

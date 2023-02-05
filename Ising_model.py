@@ -210,7 +210,7 @@ def update_SpinConfig(model, kT, spin, N):
 
             # prints current sweep to terminal
             sweeps +=10
-            # print(f'sweeps={sweeps}', end='\r')
+            print(f'sweeps={sweeps}', end='\r')
 
             # calculating new spin config matrix energy and magnetism
             magnetism = np.sum(spin)
