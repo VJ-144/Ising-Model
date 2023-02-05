@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+from tqdm import tqdm
+
 import cProfile
 
 start_time = time.time()
@@ -165,10 +167,14 @@ def update_SpinConfig(model, kT, spin, N):
     total_mag = []
     total_energy = []
 
+    outFilePath = os.getcwd() + f'/Data/{model}/{N}N_Temp{kT}_{model}Model.dat'
+    data=open( outFilePath,'w')
+    # data.write("{0} {1}\n".format('Energy', 'Magnetism'))
+
     # sweeps counter
     sweeps = 0
 
-    for n in range(nstep):
+    for n in range(nstep ):
         
         # generates new random indices to sample the spin config with every sweep
         rand_x1, rand_y1 = GenerateRandom_Idx(N)
@@ -204,7 +210,7 @@ def update_SpinConfig(model, kT, spin, N):
 
             # prints current sweep to terminal
             sweeps +=10
-            print(f'sweeps={sweeps}', end='\r')
+            # print(f'sweeps={sweeps}', end='\r')
 
             # calculating new spin config matrix energy and magnetism
             magnetism = np.sum(spin)
@@ -213,34 +219,41 @@ def update_SpinConfig(model, kT, spin, N):
             total_mag.append(magnetism)
             total_energy.append(energy)
 
+
+            # taking the average of all recorded data
+            # mean_energy = np.mean(total_energy)
+            # mean_mag = np.mean(total_mag)
+
+
+
+            # writing data to file
+            data.write('{0:.0e} {1:5.5e}\n'.format(energy, magnetism))
+
+            # closing data file
+
+
             # animates spin configuration 
             # plt.cla()
             # im=plt.imshow(spin, animated=True)
             # plt.draw()
-            # plt.pause(0.0001)
-    
+            # plt.pause(0.0001)    
+
+    data.close()
     # converting magnetism and energy list to numpy arrays
-    total_mag = np.asarray(total_mag)
-    total_energy = np.asarray(total_energy)
+    # total_mag = np.asarray(total_mag)
+    # total_energy = np.asarray(total_energy)
 
     # calculating heat capacity and energy per spin
-    h_capac = (1/(N*N*kT*kT)) * np.var(total_energy)
-    suscept = (1/(N*N*kT)) * np.var(total_mag)
+    # h_capac = (1/(N*N*kT*kT)) * np.var(total_energy)
+    # suscept = (1/(N*N*kT)) * np.var(total_mag)
 
-    # taking the average of all recorded data
-    mean_energy = np.mean(total_energy)
-    mean_mag = np.mean(total_mag)
+    # # taking the average of all recorded data
+    # mean_energy = np.mean(total_energy)
+    # mean_mag = np.mean(total_mag)
 
 
     # opening file to print all measurement data
-    outFilePath = os.getcwd() + f'\\Data\\{model}\\{N}N_Temp{kT}_{model}Model.dat'
-    data=open( outFilePath,'w')
 
-    # writing data to file
-    data.write('{0:.0e} {1:5.5e} {2:5.5e} {3:5.5e}\n'.format(mean_energy, mean_mag, h_capac, suscept))
-
-    # closing data file
-    data.close()
 
     return spin
 
@@ -262,4 +275,4 @@ def main():
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-main()
+# main()
