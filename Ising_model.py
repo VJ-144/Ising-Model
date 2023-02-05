@@ -18,12 +18,10 @@ start_time = time.time()
 random.seed(444)
 
 # calculates random spin and nearest neighbours
-def spin_NN(idx, spin):
+def spin_NN(idx, spin, N):
 
-    #select spin indices from previously generated random numbers
+    # set spin indices and value from previously generated random numbers
     itrial, jtrial = idx
-
-    # initial and flipped spins
     spin_initial=spin[itrial,jtrial]
 
     # nearest neigbour spins
@@ -36,7 +34,7 @@ def spin_NN(idx, spin):
 
 
 # generates random number for all spins to randomly sample
-def GenerateRandom():
+def GenerateRandom_Idx(N):
     # position of spin to be switched
     i = np.random.choice(N, N*N)
     j = np.random.choice(N, N*N)
@@ -44,10 +42,10 @@ def GenerateRandom():
 
 
 # updates system using Glauber Dynamics
-def Glauber(idx, spin):
+def Glauber(idx, spin, kT, N):
 
     # sets spin positions and nearest neaboughr positions and indices
-    spin_initial, spin_left, spin_right, spin_top, spin_bottom = spin_NN(idx, spin)
+    spin_initial, spin_left, spin_right, spin_top, spin_bottom = spin_NN(idx, spin, N)
     itrial, jtrial = idx
     
     # energy change if spins where flipped
@@ -112,7 +110,7 @@ def Kawasaki(lx, ly, spin):
     return deltaE_Total, spin
 
 
-def GetEnergy(spin):
+def GetEnergy(spin, N):
 
     energy = 0
     for ij in itertools.product(range(N), repeat=2):
@@ -128,128 +126,123 @@ def GetEnergy(spin):
         spin_bottom=spin[i,np.mod(j-1, N)]
 
         energy += - J * initial_spin * (spin_left + spin_right + spin_top + spin_bottom) 
+    return energy/2
 
-    return energy
-
-
-def getSuscpt(magnetism):
-    return (1/kT*N) * ( np.mean(magnetism**2) - np.mean(magnetism)**2 )
-
-def getHeatCap(energy):
-    return (1/N*kT**2) * ( np.mean(energy**2) - np.mean(energy)**2 )
-
-
-# END OF FUNCTIONS
 
 def initialise_simulation():
 
+    # reads inputs from terminal
+    N=int(sys.argv[1]) 
+    kT=float(sys.argv[2])
+    model=str(sys.argv[3])
+
     # checks command line arguments are correct
     if (len(sys.argv) != 4):
-        print("Usage python ising.animation.py N T model")
+        print("Usage python ising.animation.py model N T_inital")
         sys.exit()
     elif (model != 'Kawasaki' and  model != 'Glauber'):
         print('Error: choose from model arguments\n1 -- Glauber\n2 -- Kawasaki' )
         sys.exit()    
 
-    return model
+    return model, kT, N
 
 
 
-def update_SpinConfig(model, spin):
+def update_SpinConfig(model, kT, spin, N):
+
+    # assign non changing variables as global
+    global J
+    J=1
 
     # setting up animantion figure
     fig = plt.figure()
     im=plt.imshow(spin, animated=True)
 
     # get initial energy of spin configuration
-    energy = GetEnergy(spin)
-    # print(energy)
-    # constant variables
+    energy = GetEnergy(spin, N)
+
+    # number of sweeps for simulation
     nstep=100
 
-    # opening file to print measurement data
-    outFilePath = os.getcwd() + f'\\Data\\{model}\\{N}N_Temp{kT}_{model}Model.dat'
-    data=open( outFilePath,'w')
-
-
-    # list for all observable values
-    # total_mag = np.zeros(N,dtype=float)
-    # total_energy = np.zeros(N,dtype=float)
-
+    # list for average magnetism and energy data every 10 sweeps when sweeps > 100
     total_mag = []
     total_energy = []
 
-    #update loop here - for Glauber dynamic
-
+    # sweeps counter
     sweeps = 0
 
     for n in range(nstep):
         
-        # generates new random indices with every sweep
-        rand_x1, rand_y1 = GenerateRandom()
-        if (model=='Kawasaki'): rand_x2, rand_y2 = GenerateRandom()
+        # generates new random indices to sample the spin config with every sweep
+        rand_x1, rand_y1 = GenerateRandom_Idx(N)
+        if (model=='Kawasaki'): rand_x2, rand_y2 = GenerateRandom_Idx(N)
 
-        # loops over entire spin config
+        # loops over entire spin config number of elements
         for i in range(N*N):
 
             # uses different algirithms to calculate deltaE dependent on input
             if (model=='Glauber'):
 
-                # indices for sampled spin 
+                # select indice to sample spin location
                 idx = ( rand_x1[i], rand_y1[i] )
 
+                # calculate energy change and new spin config using glauber
+                deltaE, spin = Glauber(idx, spin, kT, N)
 
-                deltaE, spin = Glauber(idx, spin)
+            # uses Kawasaki model to calculate deltaE if specified
+            elif (model=='Kawasaki'):
 
-            else:
-            # elif (model=='Kawasaki'): 
-
-                # indices for 2 seperate sampled spin
+                # select 2 indices to sample spin location
                 idx1 = ( rand_x1[i], rand_y1[i] )
                 idx2 = ( rand_x2[i], rand_y2[i] )
 
-                # calculates energy change using kawasaki
+                # calculate energy change and new spin config using kawasaki
                 deltaE, spin = Kawasaki(idx1, idx2, spin)
 
             # change total energy
             energy += deltaE
 
-
         # plot animated update of spin configuration and record measurements every 10 sweeps
         if(n%10==0): 
 
+            # prints current sweep to terminal
             sweeps +=10
             print(f'sweeps={sweeps}', end='\r')
 
             # calculating new spin config matrix energy and magnetism
             magnetism = np.sum(spin)
             
+            # recording calculated magnetism and energy to list
             total_mag.append(magnetism)
             total_energy.append(energy)
 
+            # animates spin configuration 
             plt.cla()
             im=plt.imshow(spin, animated=True)
             plt.draw()
             plt.pause(0.0001)
     
-   
-
-
+    # converting magnetism and energy list to numpy arrays
     total_mag = np.asarray(total_mag)
     total_energy = np.asarray(total_energy)
 
-    h_capac = getHeatCap(total_energy)
-    suscept = getSuscpt(magnetism)
+    # calculating heat capacity and energy per spin
+    h_capac = (1/(N*N*kT*kT)) * np.var(total_energy)
+    suscept = (1/(N*N*kT)) * np.var(total_mag)
 
+    # taking the average of all recorded data
     mean_energy = np.mean(total_energy)
     mean_mag = np.mean(total_mag)
-    mean_heatC = np.mean(h_capac)
-    mean_suscept = np.mean(suscept)
 
 
-    # data.write('{0:.0f} {1:5.5e} {2:5.5e} {3:5.5e} {4:5.5e}\n'.format(n, suscept, h_capac, energy, magnetism))
-    data.write('{0:.0e} {1:5.5e} {2:5.5e} {3:5.5e}\n'.format(mean_energy, mean_mag, mean_heatC, mean_suscept))
+    # opening file to print all measurement data
+    outFilePath = os.getcwd() + f'\\Data\\{model}\\{N}N_Temp{kT}_{model}Model.dat'
+    data=open( outFilePath,'w')
 
+    # writing data to file
+    data.write('{0:.0e} {1:5.5e} {2:5.5e} {3:5.5e}\n'.format(mean_energy, mean_mag, h_capac, suscept))
+
+    # closing data file
     data.close()
 
     return spin
@@ -260,37 +253,15 @@ def main():
 
     start_time = time.time()
 
-    # # assign non changing variables as global
-    # global N
-    # global kT
-    # global J
-
-    # reads inputs from terminal
-    N=int(sys.argv[1]) 
-    kT=float(sys.argv[2])
-    model=str(sys.argv[3])
-    J=1 
+    model, kT, N = initialise_simulation()
 
 
-    model = 'Glauber'
-    # model = Kawasaki
-    
     # set 2D matrix for spins
-    # setting up/down spins randomly, i.e +1 & -1
+    # setting up/down spins depending on model
     if (model == 'Glauber'): spin = np.random.choice([1], size=(N, N))
     else: spin = np.random.choice([1, -1], size=(N, N))
 
-    N = 50
-    T_range = np.arange(1,3.1, 0.1)
-
-
-    for i in range(len(T_range)):
-
-
-            
-
-        model = initialise_simulation()
-        new_spinConfig = update_SpinConfig(model, spin)
+    new_spin = update_SpinConfig(model, kT, spin, N)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
