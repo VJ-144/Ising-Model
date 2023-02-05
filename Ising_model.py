@@ -152,8 +152,8 @@ def update_SpinConfig(model, kT, spin, N):
     J=1
 
     # setting up animantion figure
-    fig = plt.figure()
-    im=plt.imshow(spin, animated=True)
+    # fig = plt.figure()
+    # im=plt.imshow(spin, animated=True)
 
     # get initial energy of spin configuration
     energy = GetEnergy(spin, N)
@@ -214,10 +214,10 @@ def update_SpinConfig(model, kT, spin, N):
             total_energy.append(energy)
 
             # animates spin configuration 
-            plt.cla()
-            im=plt.imshow(spin, animated=True)
-            plt.draw()
-            plt.pause(0.0001)
+            # plt.cla()
+            # im=plt.imshow(spin, animated=True)
+            # plt.draw()
+            # plt.pause(0.0001)
     
     # converting magnetism and energy list to numpy arrays
     total_mag = np.asarray(total_mag)
