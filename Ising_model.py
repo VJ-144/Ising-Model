@@ -158,10 +158,10 @@ def update_SpinConfig(model, kT, spin, N):
     # im=plt.imshow(spin, animated=True)
 
     # get initial energy of spin configuration
-    energy = GetEnergy(spin, N)
+    # energy = GetEnergy(spin, N)
 
     # number of sweeps for simulation
-    nstep=10100
+    nstep=100
 
     # list for average magnetism and energy data every 10 sweeps when sweeps > 100
     total_mag = []
@@ -174,7 +174,7 @@ def update_SpinConfig(model, kT, spin, N):
     # sweeps counter
     sweeps = 0
 
-    for n in range(nstep ):
+    for n in range(nstep):
         
         # generates new random indices to sample the spin config with every sweep
         rand_x1, rand_y1 = GenerateRandom_Idx(N)
@@ -203,7 +203,7 @@ def update_SpinConfig(model, kT, spin, N):
                 deltaE, spin = Kawasaki(idx1, idx2, spin)
 
             # change total energy
-            energy += deltaE
+            
 
         # plot animated update of spin configuration and record measurements every 10 sweeps
         if(n%10==0 and n>100): 
@@ -213,24 +213,14 @@ def update_SpinConfig(model, kT, spin, N):
             print(f'sweeps={sweeps}', end='\r')
 
             # calculating new spin config matrix energy and magnetism
-            magnetism = np.sum(spin)
-            
+            magnetism = np.abs(np.sum(spin))
+            energy = GetEnergy(spin, N)
             # recording calculated magnetism and energy to list
             total_mag.append(magnetism)
             total_energy.append(energy)
 
-
-            # taking the average of all recorded data
-            # mean_energy = np.mean(total_energy)
-            # mean_mag = np.mean(total_mag)
-
-
-
             # writing data to file
             data.write('{0:.0e} {1:5.5e}\n'.format(energy, magnetism))
-
-            # closing data file
-
 
             # animates spin configuration 
             # plt.cla()
@@ -238,22 +228,8 @@ def update_SpinConfig(model, kT, spin, N):
             # plt.draw()
             # plt.pause(0.0001)    
 
+    # closing data file
     data.close()
-    # converting magnetism and energy list to numpy arrays
-    # total_mag = np.asarray(total_mag)
-    # total_energy = np.asarray(total_energy)
-
-    # calculating heat capacity and energy per spin
-    # h_capac = (1/(N*N*kT*kT)) * np.var(total_energy)
-    # suscept = (1/(N*N*kT)) * np.var(total_mag)
-
-    # # taking the average of all recorded data
-    # mean_energy = np.mean(total_energy)
-    # mean_mag = np.mean(total_mag)
-
-
-    # opening file to print all measurement data
-
 
     return spin
 
