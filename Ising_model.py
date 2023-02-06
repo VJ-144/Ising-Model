@@ -161,7 +161,7 @@ def update_SpinConfig(model, kT, spin, N):
     # energy = GetEnergy(spin, N)
 
     # number of sweeps for simulation
-    nstep=100
+    nstep=10100
 
     # list for average magnetism and energy data every 10 sweeps when sweeps > 100
     total_mag = []
