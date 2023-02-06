@@ -65,23 +65,23 @@ def Glauber(idx, spin, kT, N):
 
 
 # updates system using Kawasaki Dynamics
-def Kawasaki(lx, ly, spin):
+def Kawasaki(idx1, idx2, spin, kT, N):
     
     # selects 2 random spin locations
-    spin_positions1, spin_idx1 = RandSpin(lx, ly)
-    itrial1, jtrial1 = spin_idx1
-    spin_initial1, spin_left1, spin_right1, spin_top1, spin_bottom1 = spin_positions1
+    # sets spin positions and nearest neaboughr positions and indices
+    spin_initial1, spin_left1, spin_right1, spin_top1, spin_bottom1 = spin_NN(idx1, spin, N)
+    itrial1, jtrial1 = idx1
 
-    spin_positions2, spin_idx2 = RandSpin(lx, ly)
-    itrial2, jtrial2 = spin_idx2
-    spin_initial2, spin_left2, spin_right2, spin_top2, spin_bottom2 = spin_positions2
+    # sets spin positions and nearest neaboughr positions and indices
+    spin_initial2, spin_left2, spin_right2, spin_top2, spin_bottom2 = spin_NN(idx2, spin, N)
+    itrial2, jtrial2 = idx2
 
 
     # ensures we do not randomly sample the exact same spin 
-    while ( (spin_initial1) == (spin_initial2) ): 
-        spin_positions2, spin_idx2 = RandSpin(lx, ly)
-        itrial2, jtrial2 = spin_idx2
-        spin_initial2, spin_left2, spin_right2, spin_top2, spin_bottom2 = spin_positions2
+    # while ( (spin_initial1) == (spin_initial2) ): 
+    #     spin_positions2, spin_idx2 = RandSpin(lx, ly)
+    #     itrial2, jtrial2 = spin_idx2
+    #     spin_initial2, spin_left2, spin_right2, spin_top2, spin_bottom2 = spin_positions2
 
     # calculating flipped energies of seperate spins
     deltaE1 = 2 * spin_initial1 * (spin_left1 + spin_right1 + spin_bottom1 + spin_top1)
@@ -91,22 +91,23 @@ def Kawasaki(lx, ly, spin):
     deltaE_Total = deltaE1 + deltaE2
 
     # correction for nearest neubhours
-    if ( [itrial1,jtrial1] == [np.mod(itrial2-1, lx), jtrial2] ): deltaE_Total += 4
-    if ( [itrial1,jtrial1] == [np.mod(itrial2+1, lx), jtrial2] ): deltaE_Total += 4
-    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2+1, lx)] ): deltaE_Total += 4
-    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2-1, lx)] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [np.mod(itrial2-1, N), jtrial2] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [np.mod(itrial2+1, N), jtrial2] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2+1, N)] ): deltaE_Total += 4
+    if ( [itrial1,jtrial1] == [itrial2, np.mod(jtrial2-1, N)] ): deltaE_Total += 4
 
     # flip spin if the probability criteria is met
     Prob_threshold = np.random.random()
 
     # spin is always flipped if energy change is negative
     if (deltaE_Total < 0 or np.exp(-(deltaE_Total)/kT) > Prob_threshold): 
-        spin[itrial1,jtrial1]=spin_initial2
-        spin[itrial2,jtrial2]=spin_initial1
+        spin[itrial1,jtrial1] *= -1
+        spin[itrial2,jtrial2] *= -1
+        return deltaE_Total, spin
     else:
         return 0, spin
 
-    return deltaE_Total, spin
+    
 
 
 def GetEnergy(spin, N):
@@ -195,12 +196,13 @@ def update_SpinConfig(model, kT, spin, N):
             # uses Kawasaki model to calculate deltaE if specified
             elif (model=='Kawasaki'):
 
-                # select 2 indices to sample spin location
+                # select 2 indices to sample spin location and skips interation if they are the same (as no energy change)
                 idx1 = ( rand_x1[i], rand_y1[i] )
                 idx2 = ( rand_x2[i], rand_y2[i] )
+                if ( spin[rand_x1[i], rand_y1[i]] == spin[rand_x2[i], rand_y2[i]] ): continue 
 
                 # calculate energy change and new spin config using kawasaki
-                deltaE, spin = Kawasaki(idx1, idx2, spin)
+                deltaE, spin = Kawasaki(idx1, idx2, spin, kT, N)
 
             # change total energy
             
@@ -220,7 +222,7 @@ def update_SpinConfig(model, kT, spin, N):
             total_energy.append(energy)
 
             # writing data to file
-            data.write('{0:.0e} {1:5.5e}\n'.format(energy, magnetism))
+            data.write('{0:5.5e} {1:5.5e}\n'.format(energy, magnetism))
 
             # animates spin configuration 
             # plt.cla()
@@ -251,5 +253,5 @@ def main():
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-# main()
+main()
 #random comment
