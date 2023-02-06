@@ -172,6 +172,8 @@ def update_SpinConfig(model, kT, spin, N):
     data=open( outFilePath,'w')
     # data.write("{0} {1}\n".format('Energy', 'Magnetism'))
 
+    energy = GetEnergy(spin, N)
+
     # sweeps counter
     sweeps = 0
 
@@ -205,6 +207,7 @@ def update_SpinConfig(model, kT, spin, N):
                 deltaE, spin = Kawasaki(idx1, idx2, spin, kT, N)
 
             # change total energy
+            energy += deltaE
             
 
         # plot animated update of spin configuration and record measurements every 10 sweeps
@@ -216,7 +219,8 @@ def update_SpinConfig(model, kT, spin, N):
 
             # calculating new spin config matrix energy and magnetism
             magnetism = np.abs(np.sum(spin))
-            energy = GetEnergy(spin, N)
+            # energy = GetEnergy(spin, N)
+
             # recording calculated magnetism and energy to list
             total_mag.append(magnetism)
             total_energy.append(energy)
@@ -253,5 +257,5 @@ def main():
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-main()
+#main()
 #random comment
