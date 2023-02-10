@@ -8,6 +8,7 @@ the simulation is extract the saved data and run the bootstap error analyses. Th
 spelling and case sensitive.
 """
 
+import string
 import sys
 import os
 import numpy as np
@@ -137,6 +138,8 @@ def main():
         tot_mag_err.append(np.std(mag))
 
 
+    np.savetxt(f'{model}Processed_DataPoints.csv', np.array([tot_kT, tot_energy, tot_mag, tot_hCap, tot_sus]).T, delimiter='\t', fmt="%s", header="kT Energy    Magnetism   Heat_Cap   Susceptability ")
+
     # setting canvas for plotting
     fig, ax = plt.subplots(2, 2, figsize=(7, 5))
 
@@ -161,14 +164,14 @@ def main():
     # plotting magnetism
     ax[1,0].set_title('Magnetism', pad=4)
     ax[1,0].errorbar(tot_kT, tot_mag, marker='o', markersize = 4, linestyle='--', yerr=tot_mag_err, color='black', capsize=3)
-    ax[1,0].set_ylabel('M [-]')
+    ax[1,0].set_ylabel('$\mid M \mid$ [-]')
     ax[1,0].set_xlabel('kT [K]')
 
 
     # plotting energy
     ax[1,1].set_title('Energy', pad=4)
     ax[1,1].errorbar(tot_kT, tot_energy,marker='o', markersize = 4, linestyle='--', yerr=tot_energy_err, color='black', capsize=3)
-    ax[1,1].set_ylabel('E [-]')
+    ax[1,1].set_ylabel('Average E [-]')
     ax[1,1].set_xlabel('kT [K]')
 
     # displays plot
