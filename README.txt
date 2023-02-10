@@ -2,11 +2,13 @@ INSTRUCTIONS
 
 To run this ising simulation we must require conditions that the correct directories are created
 for output data to be stored. The simulation is run for 10100 sweeps and the first 100 are discarded
-to allow the system to reach equilibrium.
+to allow the system to reach equilibrium. 
+
+!The visualisation of the system only starts after 100 sweeps!
 
 The simulation conditions are as follows:
 
-1 -- There are directories /Data/Glauber/ and /Data/Kawasaki/ in the same directories as the run.isling.simation.py, 
+1 -- There are directories /Data/Glauber/ and /Data/Kawasaki/ in the same directories as the run.isling.simulation.py, 
      PlotObservables.py and IsingModel_Functions.py files.
 
      This is nessesary as data is stored to the files in these directories every 10 sweeps when sweeps>100.
@@ -60,12 +62,12 @@ DATA AND GRAPHS FOR MARKING
         The file naming format is '{int}N_Temp{float}_{ModelName}Model.dat'
 
 
-----    The total quantative points for the plotted graphs magnetism, specific heat, energy and susceptability against kT
+----    The total quantative data points for the plotted graphs magnetism, specific heat, energy and susceptability against kT
         can be located in files KawasakiProcessed_DataPoints.csv and GlauberProcessed_DataPoints.csv
 
 
 ----    The Raw_Submission_Results directory contain previously sampled energy and magnetism for a batch simulation at 50x50N
-        matrix size and temperature ranging from 1.0->3.0K in increments of 0.1K. Plots are run from this simulated data.
+        matrix size and temperature ranging from 1.0->3.0K in increments of 0.1K. Plots are made from this simulated data.
 
         The file naming format is '{int}N_Temp{value}_{ModelName}Model.dat'
 

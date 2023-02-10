@@ -254,7 +254,7 @@ def update_SpinConfig(model, kT, spin, N):
     im=plt.imshow(spin, animated=True)
 
     # number of sweeps for simulation
-    nstep=500
+    nstep=10100
 
     # path to directory for energy and magnetism data to be stored every 10 sweeps when sweeps > 100
     outFilePath = os.getcwd() + f'/Data/{model}/{N}N_Temp{kT}_{model}Model.dat'
