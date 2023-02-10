@@ -174,8 +174,10 @@ def main():
     ax[1,1].set_ylabel('Average E [-]')
     ax[1,1].set_xlabel('kT [K]')
 
-    # displays plot
+    # displays and saves plot
+    plt.savefig(f'{model}Plots.png')
     plt.show()
+    
 
 
 # runs script
