@@ -13,11 +13,11 @@ def main():
     print('Batch Simulation Starting \n')
 
     for i in range(len(T_range)):
-        cmd = f'python checkpoint1.py {N} {np.round(T_range[i], 2)} {model}'
+        cmd = f'python Ising_model.py {N} {np.round(T_range[i], 2)} {model}'
         os.system(cmd)
 
         # prints completed simulation parameters to screen
-        print(f'Simulation Parameters: N={N} T={np.round(T_range[i], 2)} Model={model}')
+        print(f'Succesful Simulation @ Parameters: N={N} T={np.round(T_range[i], 2)} Model={model}')
 
     print('\nBatch Simulations Complete')
 
