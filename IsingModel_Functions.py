@@ -328,30 +328,3 @@ def update_SpinConfig(model, kT, spin, N):
 
     # returns updated spin matrix after 10100 sweeps
     return spin
-
-
-
-# def main():
-#     """
-#     Runs the isling simulation for 10100 sweeps for a given temperature
-#     and model from the command line and visualises
-#     """
-
-#     # records the start of simulation time
-#     start_time = time.time()
-
-#     # reads arguments from the command line, i.e. model, temperature and spin matrix size
-#     model, kT, N, BatchRun = initialise_simulation()
-
-#     # setting 2D spin matrix configuration all up for glauber model and spin up/down for kawasaki model
-#     if (model == 'Glauber'): spin = np.random.choice([1], size=(N, N))
-#     else: spin = np.random.choice([1, -1], size=(N, N))
-
-#     # updates given spin configuration for 10100 sweeps
-#     new_spin = update_SpinConfig(model, kT, spin, N)
-
-#     # prints simulation time to terminal
-#     print("--- %s seconds ---" % (time.time() - start_time))
-
-
-# main()

@@ -4,7 +4,7 @@ To run this ising simulation we must require conditions that the correct directo
 for output data to be stored. The simulation is run for 10100 sweeps and the first 100 are discarded
 to allow the system to reach equilibrium. 
 
-!The visualisation of the system only starts after 100 sweeps!
+!The visualisation of the system only starts after 100 sweeps! -- this may take a few seconds
 
 The simulation conditions are as follows:
 
@@ -27,19 +27,20 @@ PYTHON FILES
             N - length of axis for square spin matrix configuration
             kT - desired temperature to run simulation
             Model - must specify either 'Glauber' or 'Kawasaki'
-            BatchRun - must specify either 'false' or 'true'
+            BatchRun - must specify either 'False' or 'True'
 
 
             The BatchRun parameter runs the code for varied temperatures from 1.0-3.0K in increments of 0.1K
             while feeding the previously calculated spin matrix back into the simulation
 
-            example: 'python run.isling.simulation.py 50 1.5 Glauber false'
-                     This would run the ising simulation for a single temperature 1.5 at matrix size 50x50
+            example: 'python run.isling.simulation.py 50 1.5 Glauber False'
+                      This would run the ising simulation for a single temperature 1.5 at matrix size 50x50N
+		      using Glauber dynamics
 
 
-----    The PlotObservables.py file takes the stored data files to calculate heat capacity and susceptabilty data   
-        as well as plot the graphs at varied temperatures. This file uses previously run and saved data of the ising
-        simulation for both Glauber and Kawasaki dynamics at 50x50N to create plots.
+----    The PlotObservables.py file takes the stored data files saved in directories to calculate heat capacity and 
+	susceptabilty data as well as plot the graphs at varied temperatures. This file uses previously run and
+	saved data of the ising simulation for both Glauber and Kawasaki dynamics at spin matrix 50x50N to create plots.
         The code is run with the arguments:
 
         'python PlotObservables.py Model'
