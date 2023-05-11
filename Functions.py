@@ -161,7 +161,7 @@ def Kawasaki(idx1, idx2, spin, kT, N):
         return 0, spin
 
 
-def GetEnergy(spin, N):
+def GetEnergy(spin, N, h):
     """
     Calculates the total energy of a given spin configuration.
 
@@ -186,7 +186,7 @@ def GetEnergy(spin, N):
         initial_spin, spin_left, spin_right, spin_top, spin_bottom = spin_NN(idx, spin, N)
 
         # calculating spin contribution from a single spin value
-        energy += - J * initial_spin * (spin_left + spin_right + spin_top + spin_bottom) 
+        energy += - J * initial_spin * (spin_left + spin_right + spin_top + spin_bottom) - h * initial_spin
 
     # returning total energy of the spin configuration and accounting for overcounting
     return energy/2
@@ -208,15 +208,17 @@ def initialise_simulation():
     """
 
     # checks command line arguments are correct otherwise stops simulation
-    if (len(sys.argv) != 5):
-        print("Error Input Usage: python ising.animation.py N kT model BatchRun")
-        sys.exit()
+    # if (len(sys.argv) != 5):
+    #     print("Error Input Usage: python ising.animation.py N kT model BatchRun")
+    #     sys.exit()
 
     # reads input arguments from terminal
     N=int(sys.argv[1]) 
     kT=float(sys.argv[2])
     model=str(sys.argv[3])
     BatchRun=str(sys.argv[4])
+    h=float(sys.argv[5])
+
 
     if (model != 'Kawasaki' and  model != 'Glauber'):
         print('Model Parameter Error: choose from model arguments\n1 -- Glauber\n2 -- Kawasaki' )
@@ -247,7 +249,7 @@ def update_SpinConfig(model, kT, spin, N):
 
     # assign non-changing J variable as global
     global J
-    J=1
+    J=-1
 
     # setting up animantion figure
     fig = plt.figure()
@@ -313,6 +315,7 @@ def update_SpinConfig(model, kT, spin, N):
 
             # calculates new spin configuration magnetism
             magnetism = np.abs(np.sum(spin))
+            magnetism_stag = np.sum(spin) * (spin/(-1*spin))
 
             # writes new spin configuration energy and magnetism data to file 
             data.write('{0:5.5e} {1:5.5e}\n'.format(energy, magnetism))

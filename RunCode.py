@@ -12,7 +12,7 @@ A full explanation of the parameters can be found in the README.txt file
 """
 
 # importing ising model functions required
-import IsingModel_Functions as im
+import Functions as func
 import numpy as np
 import time
 import sys
